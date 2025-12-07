@@ -15,6 +15,7 @@ import WeighIn from "./pages/WeighIn";
 import LogCreatine from "./pages/LogCreatine";
 import LogSleep from "./pages/LogSleep";
 import Header from "./components/Header";
+import RetestAttributes from "./pages/RetestAttributes"; // New import
 import { useAppStore } from "./lib/store";
 import React from "react";
 
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="/weigh-in" element={<WeighIn />} />
             <Route path="/log-creatine" element={<LogCreatine />} />
             <Route path="/log-sleep" element={<LogSleep />} />
+            <Route path="/retest-attributes" element={<RetestAttributes />} /> {/* New route */}
             
             {/* Main routes, redirecting to Awakening if no profile */}
             <Route

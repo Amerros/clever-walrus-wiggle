@@ -88,13 +88,22 @@ const initialProfile: UserProfile = {
   startDate: '',
 };
 
+const getRankFromScore = (score: number): AttributeRank => {
+  if (score >= 500) return 'S';
+  if (score >= 400) return 'A';
+  if (score >= 300) return 'B';
+  if (score >= 200) return 'C';
+  if (score >= 100) return 'D';
+  return 'E';
+};
+
 const initialAttributes: Attributes = {
-  intelligence: { rank: 'E', score: 0 },
-  strength: { rank: 'E', score: 0 },
-  endurance: { rank: 'E', score: 0 },
-  agility: { rank: 'E', score: 0 },
-  discipline: { rank: 'E', score: 0, rolling30day: 0 },
-  recovery: { rank: 'E', score: 0, weeklyAvg: 0 },
+  intelligence: { rank: 'E', score: 0, lastTest: new Date().toISOString().split('T')[0] },
+  strength: { rank: 'E', score: 0, lastTest: new Date().toISOString().split('T')[0] },
+  endurance: { rank: 'E', score: 0, lastTest: new Date().toISOString().split('T')[0] },
+  agility: { rank: 'E', score: 0, lastTest: new Date().toISOString().split('T')[0] },
+  discipline: { rank: 'E', score: 0, rolling30day: 0, lastTest: new Date().toISOString().split('T')[0] },
+  recovery: { rank: 'E', score: 0, weeklyAvg: 0, lastTest: new Date().toISOString().split('T')[0] },
 };
 
 const initialLevel: Level = {
@@ -135,12 +144,16 @@ export const useAppStore = create<AppState>()(
 
       setProfile: (profile) => set({ userProfile: profile }),
       setAttribute: (attributeName, attribute) =>
-        set((state) => ({
-          attributes: {
-            ...state.attributes,
-            [attributeName]: attribute,
-          },
-        })),
+        set((state) => {
+          const newScore = attribute.score;
+          const newRank = getRankFromScore(newScore);
+          return {
+            attributes: {
+              ...state.attributes,
+              [attributeName]: { ...attribute, score: newScore, rank: newRank, lastTest: new Date().toISOString().split('T')[0] },
+            },
+          };
+        }),
       addXP: (amount) =>
         set((state) => {
           const newXP = state.level.currentXP + amount;
@@ -217,7 +230,7 @@ export const useAppStore = create<AppState>()(
 
           // Update streaks
           const todayDate = format(new Date(), 'yyyy-MM-dd');
-          const yesterdayDate = format(new Date(new Date().setDate(new Date().getDate() - 1)), 'yyyy-MM-dd');
+          const yesterdayDate = format(new Date(new Date().setDate(new Date().getDate() - 1)), 'yyyy-MM-DD');
           let newStreaks = { ...state.streaks };
 
           if (todayDate === date) { // Only update streak if logging for today

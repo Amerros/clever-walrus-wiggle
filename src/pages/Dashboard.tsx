@@ -192,14 +192,16 @@ const Dashboard = () => {
             <div key={key} className="flex justify-between items-center">
               <span className="capitalize">{key}:</span>
               <span className={`font-bold ${attr.rank === 'E' ? 'text-red-400' : attr.rank === 'D' ? 'text-orange-400' : 'text-green-400'}`}>
-                {attr.rank}-Rank
+                {attr.rank}-Rank (Score: {attr.score}) {/* Display score for clarity */}
               </span>
             </div>
           ))}
         </div>
-        <Button className="w-full mt-4 bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-background transition-colors duration-300">
-          RETEST AVAILABLE
-        </Button>
+        <Link to="/retest-attributes"> {/* Link the button */}
+          <Button className="w-full mt-4 bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-background transition-colors duration-300">
+            RETEST AVAILABLE
+          </Button>
+        </Link>
       </div>
 
       {/* Active Quests */}
