@@ -76,12 +76,12 @@ const UploadPhoto = () => {
 
       const imageUrl = publicUrlData.publicUrl;
 
-      // 2. Call Edge Function for AI analysis
+      // 2. Call Edge Function for AI analysis (now Gemini)
       let bodyFatPercentage: number | null = null;
       let aiAnalysisReport: string | null = null;
 
       try {
-        const { data: aiData, error: aiError } = await supabase.functions.invoke('image-analyzer', {
+        const { data: aiData, error: aiError } = await supabase.functions.invoke('gemini-image-analyzer', { // Changed to gemini-image-analyzer
           body: { imageUrl },
         });
 
@@ -97,8 +97,8 @@ const UploadPhoto = () => {
           toast.success("AI analysis complete!", { id: loadingToastId });
         }
       } catch (aiCallError) {
-        console.error("Error invoking image-analyzer proxy:", aiCallError);
-        toast.error("Failed to connect to AI for analysis. Please ensure OPENAI_API_KEY is set in Supabase secrets.", { id: loadingToastId });
+        console.error("Error invoking gemini-image-analyzer proxy:", aiCallError);
+        toast.error("Failed to connect to AI for analysis. Please ensure GEMINI_API_KEY is set in Supabase secrets.", { id: loadingToastId });
       }
 
       // 3. Insert document record with AI analysis results
