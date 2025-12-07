@@ -1,3 +1,4 @@
+/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.15.0";
 
