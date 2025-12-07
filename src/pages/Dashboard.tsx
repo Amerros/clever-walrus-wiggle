@@ -1,14 +1,19 @@
 import React from 'react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
-import { useAppStore, Attribute } from '@/lib/store'; // Import Attribute type
+import { useAppStore, Attribute } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
+import { Checkbox } from '@/components/ui/checkbox';
+import { format } from 'date-fns';
 
 const Dashboard = () => {
   const userProfile = useAppStore((state) => state.userProfile);
   const attributes = useAppStore((state) => state.attributes);
   const level = useAppStore((state) => state.level);
+  const streaks = useAppStore((state) => state.streaks);
+  const dailyLogs = useAppStore((state) => state.dailyLogs);
+  const logDailyQuest = useAppStore((state) => state.logDailyQuest);
 
   if (!userProfile) {
     return (
@@ -30,6 +35,26 @@ const Dashboard = () => {
 
   const xpProgress = (level.currentXP / level.nextLevelXP) * 100;
   const weightProgress = ((userProfile.currentWeight - userProfile.startWeight) / (userProfile.goalWeight - userProfile.startWeight)) * 100;
+
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const todayLog = dailyLogs.find(log => log.date === today);
+  const quests = todayLog?.quests || {
+    workout: { completed: false, xp: 100, target: 1 },
+    calories: { completed: false, xp: 50, target: 2000 },
+    protein: { completed: false, xp: 50, target: 150 },
+    creatine: { completed: false, xp: 20, target: 1 },
+    sleep: { completed: false, xp: 30, target: 7 },
+  };
+
+  const handleQuestToggle = (questName: keyof typeof quests) => {
+    const currentQuest = quests[questName];
+    if (!currentQuest.completed) {
+      logDailyQuest(today, questName, { completed: true, xp: currentQuest.xp });
+    }
+  };
+
+  const totalCaloriesToday = todayLog?.quests.calories.value || 0;
+  const totalProteinToday = todayLog?.quests.protein.value || 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -63,19 +88,56 @@ const Dashboard = () => {
       {/* Daily Quests Section */}
       <div className="bg-card p-4 rounded-lg shadow-lg border border-border mb-6">
         <h2 className="text-xl font-semibold text-primary-foreground mb-4">📋 TODAY'S QUESTS</h2>
-        <p className="text-text-secondary">Daily quests will appear here.</p>
-        {/* Placeholder for daily quests */}
+        <div className="space-y-3">
+          {Object.entries(quests).map(([questName, quest]) => (
+            <div key={questName} className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={questName}
+                  checked={quest.completed}
+                  onCheckedChange={() => handleQuestToggle(questName as keyof typeof quests)}
+                  disabled={quest.completed}
+                />
+                <label
+                  htmlFor={questName}
+                  className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${quest.completed ? 'line-through text-text-secondary' : 'text-foreground'}`}
+                >
+                  {questName.charAt(0).toUpperCase() + questName.slice(1)} ({quest.xp} XP)
+                </label>
+              </div>
+              {quest.value !== undefined && quest.target !== undefined && (
+                <span className="text-sm text-text-secondary">
+                  {quest.value} / {quest.target} {questName === 'calories' ? 'kcal' : questName === 'protein' ? 'g' : ''}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Stats & Streak */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="bg-card p-4 rounded-lg shadow-lg border border-border">
+          <h3 className="text-lg font-semibold text-primary-foreground mb-2">🔥 CURRENT STREAK</h3>
+          <p className="text-4xl font-bold text-sl-warning">{streaks.current} Days</p>
+          <p className="text-sm text-text-secondary">Longest: {streaks.longest} Days</p>
+        </div>
+        <div className="bg-card p-4 rounded-lg shadow-lg border border-border">
+          <h3 className="text-lg font-semibold text-primary-foreground mb-2">📊 TODAY'S MACROS</h3>
+          <p className="text-xl text-text-secondary">Calories: <span className="text-sl-primary-accent">{totalCaloriesToday}</span> kcal</p>
+          <p className="text-xl text-text-secondary">Protein: <span className="text-sl-secondary-accent">{totalProteinToday}</span> g</p>
+        </div>
       </div>
 
       {/* Attribute Ranks */}
       <div className="bg-card p-4 rounded-lg shadow-lg border border-border mb-6">
         <h2 className="text-xl font-semibold text-primary-foreground mb-4">💪 ATTRIBUTE RANKS</h2>
         <div className="grid grid-cols-2 gap-4 text-text-secondary">
-          {Object.entries(attributes).map(([key, attr]) => ( // Explicitly type attr as Attribute
+          {Object.entries(attributes).map(([key, attr]) => (
             <div key={key} className="flex justify-between items-center">
               <span className="capitalize">{key}:</span>
-              <span className={`font-bold ${(attr as Attribute).rank === 'E' ? 'text-red-400' : (attr as Attribute).rank === 'D' ? 'text-orange-400' : 'text-green-400'}`}>
-                {(attr as Attribute).rank}-Rank
+              <span className={`font-bold ${attr.rank === 'E' ? 'text-red-400' : attr.rank === 'D' ? 'text-orange-400' : 'text-green-400'}`}>
+                {attr.rank}-Rank
               </span>
             </div>
           ))}
@@ -104,9 +166,9 @@ const Dashboard = () => {
             🍽️ ADD MEAL
           </Button>
         </Link>
-        <Link to="/progress-report" className="w-full">
-          <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg">
-            📊 PROGRESS
+        <Link to="/weigh-in" className="w-full"> {/* New Weigh In button */}
+          <Button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 text-lg">
+            ⚖️ WEIGH IN
           </Button>
         </Link>
         <Link to="/upload-photo" className="w-full">

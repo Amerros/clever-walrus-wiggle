@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { format } from 'date-fns';
 
 export type AttributeRank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 
@@ -10,7 +11,6 @@ export interface UserProfile {
   currentWeight: number;
   goalWeight: number;
   startDate: string;
-  // anthropicApiKey: string | null; // Removed
 }
 
 export interface Attribute {
@@ -40,13 +40,14 @@ export interface Level {
 export interface Streaks {
   current: number;
   longest: number;
-  lastActive: string;
+  lastActive: string; // Date string 'YYYY-MM-DD'
 }
 
 export interface DailyQuest {
   completed: boolean;
   xp: number;
   value?: number; // For calories/protein/sleep hours
+  target?: number; // For quests with specific targets (e.g., 2000 calories, 150g protein)
 }
 
 export interface DailyLog {
@@ -57,7 +58,7 @@ export interface DailyLog {
     protein: DailyQuest;
     creatine: DailyQuest;
     sleep: DailyQuest;
-    kickboxing?: DailyQuest;
+    kickboxing?: DailyQuest; // Example of an optional quest
   };
   workout?: any; // Placeholder for detailed workout data
   totalXP: number;
@@ -74,7 +75,7 @@ export interface AppState {
   setAttribute: (attributeName: keyof Attributes, attribute: Attribute) => void;
   addXP: (amount: number) => void;
   logDailyQuest: (date: string, questName: keyof DailyLog['quests'], data: Partial<DailyQuest>) => void;
-  // setAnthropicApiKey: (key: string) => void; // Removed
+  updateCurrentWeight: (newWeight: number) => void;
   resetState: () => void;
 }
 
@@ -85,7 +86,6 @@ const initialProfile: UserProfile = {
   currentWeight: 0,
   goalWeight: 0,
   startDate: '',
-  // anthropicApiKey: null, // Removed
 };
 
 const initialAttributes: Attributes = {
@@ -114,6 +114,14 @@ const calculateNextLevelXP = (level: number) => {
   if (level === 1) return 1000;
   return Math.round(initialLevel.nextLevelXP * Math.pow(1.5, level - 1));
 };
+
+const defaultDailyQuests = () => ({
+  workout: { completed: false, xp: 100, target: 1 }, // 1 workout
+  calories: { completed: false, xp: 50, target: 2000 }, // 2000 kcal
+  protein: { completed: false, xp: 50, target: 150 }, // 150g protein
+  creatine: { completed: false, xp: 20, target: 1 }, // 1 dose
+  sleep: { completed: false, xp: 30, target: 7 }, // 7 hours sleep
+});
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -168,13 +176,7 @@ export const useAppStore = create<AppState>()(
           } else {
             currentLog = {
               date,
-              quests: {
-                workout: { completed: false, xp: 0 },
-                calories: { completed: false, xp: 0 },
-                protein: { completed: false, xp: 0 },
-                creatine: { completed: false, xp: 0 },
-                sleep: { completed: false, xp: 0 },
-              },
+              quests: defaultDailyQuests(),
               totalXP: 0,
             };
             updatedDailyLogs.push(currentLog);
@@ -204,12 +206,31 @@ export const useAppStore = create<AppState>()(
             get().addXP(xpGained);
           }
 
-          return { dailyLogs: updatedDailyLogs };
+          // Update streaks
+          const todayDate = format(new Date(), 'yyyy-MM-dd');
+          const yesterdayDate = format(new Date(new Date().setDate(new Date().getDate() - 1)), 'yyyy-MM-dd');
+          let newStreaks = { ...state.streaks };
+
+          if (todayDate === date) { // Only update streak if logging for today
+            if (newStreaks.lastActive === yesterdayDate) {
+              newStreaks.current += 1;
+            } else if (newStreaks.lastActive !== todayDate) {
+              newStreaks.current = 1; // Start new streak if not active yesterday or today
+            }
+            newStreaks.lastActive = todayDate;
+            if (newStreaks.current > newStreaks.longest) {
+              newStreaks.longest = newStreaks.current;
+            }
+          }
+
+          return { dailyLogs: updatedDailyLogs, streaks: newStreaks };
         }),
-      // setAnthropicApiKey: (key) => // Removed
-      //   set((state) => ({
-      //     userProfile: state.userProfile ? { ...state.userProfile, anthropicApiKey: key } : null,
-      //   })),
+      updateCurrentWeight: (newWeight) =>
+        set((state) => ({
+          userProfile: state.userProfile
+            ? { ...state.userProfile, currentWeight: newWeight }
+            : null,
+        })),
       resetState: () => set({
         userProfile: null,
         attributes: initialAttributes,
