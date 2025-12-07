@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { useSession } from '@/components/SessionProvider'; // Import useSession
+
+// Fixed UUID for the single user
+const SINGLE_USER_ID = "00000000-0000-0000-0000-000000000001"; 
 
 const Awakening = () => {
   const navigate = useNavigate();
-  const { user, isLoading } = useSession(); // Get user and loading state from session
   const setProfile = useAppStore((state) => state.setProfile);
   const userProfile = useAppStore((state) => state.userProfile);
 
@@ -18,30 +19,20 @@ const Awakening = () => {
   const [goalWeight, setGoalWeight] = useState<number>(userProfile?.goalWeight || 75); // Sensible default
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      // If not loading and no user, redirect to login
-      navigate('/login');
-      toast.info("Please log in to begin your awakening.");
-    } else if (!isLoading && user && userProfile?.userId === user.id) {
-      // If user is logged in and profile already set, redirect to dashboard
+    if (userProfile?.userId === SINGLE_USER_ID) {
+      // If profile already set for the single user, redirect to dashboard
       navigate('/dashboard');
     }
-  }, [user, isLoading, navigate, userProfile]);
+  }, [navigate, userProfile]);
 
   const handleBeginEvaluation = () => {
-    if (!user) {
-      toast.error("You must be logged in to begin your awakening.");
-      navigate('/login');
-      return;
-    }
-
     if (!height || !currentWeight || !goalWeight) {
       toast.error("Please fill in all fields.");
       return;
     }
 
     const newProfile = {
-      userId: user.id, // Use the actual Supabase user ID
+      userId: SINGLE_USER_ID, // Use the fixed UUID for the single user
       height,
       startWeight: currentWeight,
       currentWeight,
@@ -53,9 +44,9 @@ const Awakening = () => {
     navigate('/dashboard');
   };
 
-  if (isLoading || !user) {
-    // Show a loading state or nothing while redirecting
-    return <div className="min-h-screen flex items-center justify-center bg-background text-foreground">Loading...</div>;
+  // If userProfile is already set, we are redirecting, so no need to render the form
+  if (userProfile?.userId === SINGLE_USER_ID) {
+    return <div className="min-h-screen flex items-center justify-center bg-background text-foreground">Redirecting...</div>;
   }
 
   return (
