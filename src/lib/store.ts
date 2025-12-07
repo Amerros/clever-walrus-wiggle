@@ -117,8 +117,8 @@ const calculateNextLevelXP = (level: number) => {
 
 const defaultDailyQuests = () => ({
   workout: { completed: false, xp: 100, target: 1 }, // 1 workout
-  calories: { completed: false, xp: 50, target: 2000 }, // 2000 kcal
-  protein: { completed: false, xp: 50, target: 150 }, // 150g protein
+  calories: { completed: false, xp: 50, target: 3500, value: 0 }, // 3500 kcal target, starting at 0
+  protein: { completed: false, xp: 50, target: 160, value: 0 }, // 160g protein target, starting at 0
   creatine: { completed: false, xp: 20, target: 1 }, // 1 dose
   sleep: { completed: false, xp: 30, target: 7 }, // 7 hours sleep
 });
@@ -183,9 +183,18 @@ export const useAppStore = create<AppState>()(
           }
 
           const oldQuestState = currentLog.quests[questName];
+          
+          // Accumulate value for calories and protein
+          let newValue = oldQuestState.value || 0;
+          if (questName === 'calories' || questName === 'protein') {
+            newValue += (data.value || 0);
+          } else {
+            newValue = data.value !== undefined ? data.value : newValue; // For other quests, just set if provided
+          }
+
           currentLog.quests = {
             ...currentLog.quests,
-            [questName]: { ...oldQuestState, ...data, completed: true },
+            [questName]: { ...oldQuestState, ...data, value: newValue, completed: (data.completed || (newValue >= (oldQuestState.target || Infinity))) },
           };
 
           // Update total XP for the day
@@ -201,7 +210,7 @@ export const useAppStore = create<AppState>()(
           }
 
           // Add XP to global level
-          const xpGained = (data.completed && !oldQuestState.completed) ? data.xp || 0 : 0;
+          const xpGained = (currentLog.quests[questName].completed && !oldQuestState.completed) ? currentLog.quests[questName].xp : 0;
           if (xpGained > 0) {
             get().addXP(xpGained);
           }

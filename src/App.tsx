@@ -11,7 +11,10 @@ import LogWorkout from "./pages/LogWorkout";
 import AddMeal from "./pages/AddMeal";
 import ProgressReport from "./pages/ProgressReport";
 import UploadPhoto from "./pages/UploadPhoto";
-import WeighIn from "./pages/WeighIn"; // Import the new WeighIn page
+import WeighIn from "./pages/WeighIn";
+import LogCreatine from "./pages/LogCreatine"; // Import LogCreatine
+import LogSleep from "./pages/LogSleep";       // Import LogSleep
+import Header from "./components/Header";
 import { useAppStore } from "./lib/store";
 import React from "react";
 
@@ -26,6 +29,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <Header />
           <Routes>
             <Route path="/awakening" element={<Awakening />} />
             <Route path="/settings" element={<Settings />} />
@@ -33,7 +37,9 @@ const App = () => {
             <Route path="/add-meal" element={<AddMeal />} />
             <Route path="/progress-report" element={<ProgressReport />} />
             <Route path="/upload-photo" element={<UploadPhoto />} />
-            <Route path="/weigh-in" element={<WeighIn />} /> {/* Add the new route */}
+            <Route path="/weigh-in" element={<WeighIn />} />
+            <Route path="/log-creatine" element={<LogCreatine />} /> {/* Add LogCreatine route */}
+            <Route path="/log-sleep" element={<LogSleep />} />       {/* Add LogSleep route */}
             <Route
               path="/dashboard"
               element={userProfile ? <Dashboard /> : <Navigate to="/awakening" replace />}

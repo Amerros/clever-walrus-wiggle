@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
+import { Dumbbell, Plus, Coffee, Moon, Camera, Scale } from 'lucide-react'; // Import new icons
 
 const Dashboard = () => {
   const userProfile = useAppStore((state) => state.userProfile);
@@ -40,8 +41,8 @@ const Dashboard = () => {
   const todayLog = dailyLogs.find(log => log.date === today);
   const quests = todayLog?.quests || {
     workout: { completed: false, xp: 100, target: 1 },
-    calories: { completed: false, xp: 50, target: 2000 },
-    protein: { completed: false, xp: 50, target: 150 },
+    calories: { completed: false, xp: 50, target: 3500, value: 0 },
+    protein: { completed: false, xp: 50, target: 160, value: 0 },
     creatine: { completed: false, xp: 20, target: 1 },
     sleep: { completed: false, xp: 30, target: 7 },
   };
@@ -53,36 +54,98 @@ const Dashboard = () => {
     }
   };
 
-  const totalCaloriesToday = todayLog?.quests.calories.value || 0;
-  const totalProteinToday = todayLog?.quests.protein.value || 0;
+  const totalCaloriesToday = quests.calories.value || 0;
+  const caloriesTarget = quests.calories.target || 0;
+  const totalProteinToday = quests.protein.value || 0;
+  const proteinTarget = quests.protein.target || 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      {/* Player Card - Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border pb-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-primary-foreground">
-            <span className="text-cyan-400">HUNTER</span> DASHBOARD
-          </h1>
-          <Link to="/settings">
-            <Button variant="ghost" size="icon" className="text-text-secondary hover:text-primary-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.22a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.22a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.22a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l.15-.08a2 2 0 0 0 .73-2.73l-.78-1.22a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            </Button>
-          </Link>
+      {/* Player Card */}
+      <div className="bg-card p-6 rounded-lg shadow-lg border border-border mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-2xl font-bold text-primary-foreground">PLAYER</h2>
+          <span className="bg-sl-primary-accent text-sl-background text-xs font-semibold px-2.5 py-0.5 rounded-full">
+            {level.currentLevel <= 5 ? "Novice Hunter" : level.currentLevel <= 10 ? "E-Rank Hunter" : "Higher Rank Hunter"}
+          </span>
         </div>
 
-        <div className="bg-card p-4 rounded-lg shadow-lg border border-border mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-lg font-semibold text-primary-foreground">Level {level.currentLevel} - {level.currentLevel <= 5 ? "Novice Hunter" : level.currentLevel <= 10 ? "E-Rank Hunter" : "Higher Rank Hunter"}</span>
+        <div className="mb-4">
+          <div className="flex items-baseline justify-between">
+            <span className="text-5xl font-bold text-sl-primary-accent">LVL. {level.currentLevel}</span>
+            <span className="text-sm text-text-secondary">Streak: <span className="text-sl-warning font-bold">{streaks.current} Days 🔥</span></span>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm text-text-secondary">EXPERIENCE</span>
             <span className="text-sm text-text-secondary">{level.currentXP} / {level.nextLevelXP} XP</span>
           </div>
           <Progress value={xpProgress} className="h-2 bg-muted" indicatorClassName="bg-gradient-to-r from-cyan-400 to-purple-400" />
-          <div className="flex items-center justify-between mt-3">
-            <span className="text-sm text-text-secondary">{userProfile.currentWeight}kg</span>
-            <span className="text-sm text-text-secondary">{userProfile.goalWeight}kg</span>
-          </div>
-          <Progress value={weightProgress} className="h-2 bg-muted" indicatorClassName="bg-gradient-to-r from-green-400 to-blue-400" />
         </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p className="text-sm text-text-secondary">WEIGHT GOAL</p>
+            <p className="text-2xl font-bold text-foreground">{userProfile.currentWeight}kg <span className="text-text-secondary text-lg">→ {userProfile.goalWeight}kg</span></p>
+            <Progress value={weightProgress} className="h-1 bg-muted" indicatorClassName="bg-gradient-to-r from-green-400 to-blue-400" />
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-text-secondary">HEIGHT</p>
+            <p className="text-2xl font-bold text-foreground">{userProfile.height}cm</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-text-secondary">TODAY'S CALS</p>
+            <p className="text-xl font-bold text-sl-primary-accent">{totalCaloriesToday} / {caloriesTarget} <span className="text-text-secondary">kcal</span></p>
+            <Progress value={(totalCaloriesToday / caloriesTarget) * 100} className="h-1 bg-muted" indicatorClassName="bg-gradient-to-r from-cyan-400 to-purple-400" />
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-text-secondary">PROTEIN</p>
+            <p className="text-xl font-bold text-sl-secondary-accent">{totalProteinToday}g / {proteinTarget}g</p>
+            <Progress value={(totalProteinToday / proteinTarget) * 100} className="h-1 bg-muted" indicatorClassName="bg-gradient-to-r from-purple-400 to-pink-400" />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Link to="/log-workout" className="w-full">
+          <Button className="w-full h-24 bg-card hover:bg-accent text-primary-accent border border-border flex flex-col items-center justify-center text-lg font-semibold transition-colors duration-300">
+            <Dumbbell className="h-8 w-8 mb-1" />
+            LOG WORKOUT
+          </Button>
+        </Link>
+        <Link to="/add-meal" className="w-full">
+          <Button className="w-full h-24 bg-card hover:bg-accent text-secondary-accent border border-border flex flex-col items-center justify-center text-lg font-semibold transition-colors duration-300">
+            <Plus className="h-8 w-8 mb-1" />
+            ADD MEAL
+          </Button>
+        </Link>
+        <Link to="/log-creatine" className="w-full"> {/* New Creatine button */}
+          <Button className="w-full h-24 bg-card hover:bg-accent text-sl-success border border-border flex flex-col items-center justify-center text-lg font-semibold transition-colors duration-300">
+            <Coffee className="h-8 w-8 mb-1" />
+            CREATINE
+          </Button>
+        </Link>
+        <Link to="/log-sleep" className="w-full"> {/* New Sleep button */}
+          <Button className="w-full h-24 bg-card hover:bg-accent text-sl-warning border border-border flex flex-col items-center justify-center text-lg font-semibold transition-colors duration-300">
+            <Moon className="h-8 w-8 mb-1" />
+            LOG SLEEP
+          </Button>
+        </Link>
+        <Link to="/weigh-in" className="w-full">
+          <Button className="w-full h-24 bg-card hover:bg-accent text-sl-primary-accent border border-border flex flex-col items-center justify-center text-lg font-semibold transition-colors duration-300">
+            <Scale className="h-8 w-8 mb-1" />
+            WEIGH IN
+          </Button>
+        </Link>
+        <Link to="/upload-photo" className="w-full">
+          <Button className="w-full h-24 bg-card hover:bg-accent text-sl-secondary-accent border border-border flex flex-col items-center justify-center text-lg font-semibold transition-colors duration-300">
+            <Camera className="h-8 w-8 mb-1" />
+            UPLOAD PHOTO
+          </Button>
+        </Link>
       </div>
 
       {/* Daily Quests Section */}
@@ -115,18 +178,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Quick Stats & Streak */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-card p-4 rounded-lg shadow-lg border border-border">
-          <h3 className="text-lg font-semibold text-primary-foreground mb-2">🔥 CURRENT STREAK</h3>
-          <p className="text-4xl font-bold text-sl-warning">{streaks.current} Days</p>
-          <p className="text-sm text-text-secondary">Longest: {streaks.longest} Days</p>
-        </div>
-        <div className="bg-card p-4 rounded-lg shadow-lg border border-border">
-          <h3 className="text-lg font-semibold text-primary-foreground mb-2">📊 TODAY'S MACROS</h3>
-          <p className="text-xl text-text-secondary">Calories: <span className="text-sl-primary-accent">{totalCaloriesToday}</span> kcal</p>
-          <p className="text-xl text-text-secondary">Protein: <span className="text-sl-secondary-accent">{totalProteinToday}</span> g</p>
-        </div>
+      {/* This week's training schedule - Placeholder */}
+      <div className="bg-card p-4 rounded-lg shadow-lg border border-border mb-6">
+        <h2 className="text-xl font-semibold text-primary-foreground mb-4">🗓️ THIS WEEK'S TRAINING</h2>
+        <p className="text-text-secondary">No schedule set. Plan your workouts!</p>
       </div>
 
       {/* Attribute Ranks */}
@@ -152,30 +207,6 @@ const Dashboard = () => {
         <h2 className="text-xl font-semibold text-primary-foreground mb-4">⚡ ACTIVE QUEST</h2>
         <p className="text-text-secondary">No active quests. Check back later!</p>
         {/* Placeholder for active quests */}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <Link to="/log-workout" className="w-full">
-          <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 text-lg">
-            🏋️ LOG WORKOUT
-          </Button>
-        </Link>
-        <Link to="/add-meal" className="w-full">
-          <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-lg">
-            🍽️ ADD MEAL
-          </Button>
-        </Link>
-        <Link to="/weigh-in" className="w-full"> {/* New Weigh In button */}
-          <Button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 text-lg">
-            ⚖️ WEIGH IN
-          </Button>
-        </Link>
-        <Link to="/upload-photo" className="w-full">
-          <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 text-lg">
-            📸 UPLOAD PHOTO
-          </Button>
-        </Link>
       </div>
 
       <MadeWithDyad />
