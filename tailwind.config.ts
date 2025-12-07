@@ -62,6 +62,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Solo Leveling Custom Colors
+        'sl-background': '#0a0e27',
+        'sl-primary-accent': '#00d4ff', // Cyan blue
+        'sl-secondary-accent': '#b842ff', // Purple
+        'sl-success': '#00ff88', // Neon green
+        'sl-warning': '#ff6b35', // Orange
+        'sl-danger': '#ff3838', // Red
+        'sl-text-primary': '#ffffff', // White
+        'sl-text-secondary': '#b8c5d6', // Light gray
       },
       borderRadius: {
         lg: "var(--radius)",
