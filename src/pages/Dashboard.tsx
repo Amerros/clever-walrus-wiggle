@@ -94,18 +94,26 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <Button className="bg-cyan-600 hover:bg-cyan-700 text-white py-3 text-lg">
-          🏋️ LOG WORKOUT
-        </Button>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white py-3 text-lg">
-          🍽️ ADD MEAL
-        </Button>
-        <Button className="bg-green-600 hover:bg-green-700 text-white py-3 text-lg">
-          📊 PROGRESS
-        </Button>
-        <Button className="bg-orange-600 hover:bg-orange-700 text-white py-3 text-lg">
-          📸 UPLOAD PHOTO
-        </Button>
+        <Link to="/log-workout" className="w-full">
+          <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 text-lg">
+            🏋️ LOG WORKOUT
+          </Button>
+        </Link>
+        <Link to="/add-meal" className="w-full">
+          <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-lg">
+            🍽️ ADD MEAL
+          </Button>
+        </Link>
+        <Link to="/progress-report" className="w-full">
+          <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg">
+            📊 PROGRESS
+          </Button>
+        </Link>
+        <Link to="/upload-photo" className="w-full">
+          <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 text-lg">
+            📸 UPLOAD PHOTO
+          </Button>
+        </Link>
       </div>
 
       <MadeWithDyad />

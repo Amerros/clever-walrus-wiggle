@@ -3,10 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Dashboard from "./pages/Dashboard"; // Renamed from Index
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Awakening from "./pages/Awakening";
 import Settings from "./pages/Settings";
+import LogWorkout from "./pages/LogWorkout";
+import AddMeal from "./pages/AddMeal";
+import ProgressReport from "./pages/ProgressReport";
+import UploadPhoto from "./pages/UploadPhoto";
 import { useAppStore } from "./lib/store";
 import React from "react";
 
@@ -24,6 +28,10 @@ const App = () => {
           <Routes>
             <Route path="/awakening" element={<Awakening />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/log-workout" element={<LogWorkout />} />
+            <Route path="/add-meal" element={<AddMeal />} />
+            <Route path="/progress-report" element={<ProgressReport />} />
+            <Route path="/upload-photo" element={<UploadPhoto />} />
             <Route
               path="/dashboard"
               element={userProfile ? <Dashboard /> : <Navigate to="/awakening" replace />}
