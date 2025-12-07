@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react'; // Removed useState
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+// import { Input } from '@/components/ui/input'; // Removed
+// import { Label } from '@/components/ui/label'; // Removed
 import { toast } from 'sonner';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const userProfile = useAppStore((state) => state.userProfile);
-  const setAnthropicApiKey = useAppStore((state) => state.setAnthropicApiKey);
+  // const userProfile = useAppStore((state) => state.userProfile); // Removed
+  // const setAnthropicApiKey = useAppStore((state) => state.setAnthropicApiKey); // Removed
   const resetState = useAppStore((state) => state.resetState);
 
-  const [apiKey, setApiKey] = useState<string>(userProfile?.anthropicApiKey || '');
+  // const [apiKey, setApiKey] = useState<string>(userProfile?.anthropicApiKey || ''); // Removed
 
-  const handleSaveApiKey = () => {
-    if (!apiKey) {
-      toast.error("API Key cannot be empty.");
-      return;
-    }
-    setAnthropicApiKey(apiKey);
-    toast.success("Anthropic API Key saved successfully!");
-  };
+  // const handleSaveApiKey = () => { // Removed
+  //   if (!apiKey) {
+  //     toast.error("API Key cannot be empty.");
+  //     return;
+  //   }
+  //   setAnthropicApiKey(apiKey);
+  //   toast.success("Anthropic API Key saved successfully!");
+  // };
 
   const handleResetApp = () => {
     if (window.confirm("Are you sure you want to reset the entire application? All your progress will be lost.")) {
@@ -41,27 +41,13 @@ const Settings = () => {
         <div className="space-y-4 bg-card p-6 rounded-lg shadow-lg border border-border">
           <h2 className="text-2xl font-semibold text-primary-foreground">AI Integration</h2>
           <p className="text-sm text-text-secondary mb-2">
-            Manage your Anthropic API Key for AI-powered features.
+            Your Anthropic API Key is now managed securely on the server.
             <br />
-            Get it from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">console.anthropic.com</a>
+            Please set the `ANTHROPIC_API_KEY` secret in your Supabase project settings.
+            <br />
+            <a href="https://app.supabase.com/project/iqdnhlmetpdqyvjjtfmf/functions/secrets" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Manage Supabase Secrets</a>
           </p>
-          <div>
-            <Label htmlFor="apiKey" className="text-left block mb-1 text-text-secondary">Anthropic API Key</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="bg-input border-border text-foreground"
-              placeholder="sk-ant-api03-..."
-            />
-          </div>
-          <Button
-            onClick={handleSaveApiKey}
-            className="w-full bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-background transition-colors duration-300"
-          >
-            Save API Key
-          </Button>
+          {/* Removed API Key input and save button */}
         </div>
 
         <div className="space-y-4 bg-card p-6 rounded-lg shadow-lg border border-destructive">

@@ -10,7 +10,7 @@ export interface UserProfile {
   currentWeight: number;
   goalWeight: number;
   startDate: string;
-  anthropicApiKey: string | null;
+  // anthropicApiKey: string | null; // Removed
 }
 
 export interface Attribute {
@@ -74,7 +74,7 @@ export interface AppState {
   setAttribute: (attributeName: keyof Attributes, attribute: Attribute) => void;
   addXP: (amount: number) => void;
   logDailyQuest: (date: string, questName: keyof DailyLog['quests'], data: Partial<DailyQuest>) => void;
-  setAnthropicApiKey: (key: string) => void;
+  // setAnthropicApiKey: (key: string) => void; // Removed
   resetState: () => void;
 }
 
@@ -85,7 +85,7 @@ const initialProfile: UserProfile = {
   currentWeight: 0,
   goalWeight: 0,
   startDate: '',
-  anthropicApiKey: null,
+  // anthropicApiKey: null, // Removed
 };
 
 const initialAttributes: Attributes = {
@@ -206,10 +206,10 @@ export const useAppStore = create<AppState>()(
 
           return { dailyLogs: updatedDailyLogs };
         }),
-      setAnthropicApiKey: (key) =>
-        set((state) => ({
-          userProfile: state.userProfile ? { ...state.userProfile, anthropicApiKey: key } : null,
-        })),
+      // setAnthropicApiKey: (key) => // Removed
+      //   set((state) => ({
+      //     userProfile: state.userProfile ? { ...state.userProfile, anthropicApiKey: key } : null,
+      //   })),
       resetState: () => set({
         userProfile: null,
         attributes: initialAttributes,

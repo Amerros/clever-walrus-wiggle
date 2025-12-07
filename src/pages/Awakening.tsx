@@ -14,11 +14,11 @@ const Awakening = () => {
   const [height, setHeight] = useState<number>(userProfile?.height || 189);
   const [currentWeight, setCurrentWeight] = useState<number>(userProfile?.currentWeight || 72);
   const [goalWeight, setGoalWeight] = useState<number>(userProfile?.goalWeight || 78);
-  const [apiKey, setApiKey] = useState<string>(userProfile?.anthropicApiKey || '');
+  // const [apiKey, setApiKey] = useState<string>(userProfile?.anthropicApiKey || ''); // Removed
 
   const handleBeginEvaluation = () => {
-    if (!height || !currentWeight || !goalWeight || !apiKey) {
-      toast.error("Please fill in all fields, including your Anthropic API Key.");
+    if (!height || !currentWeight || !goalWeight) { // Removed apiKey check
+      toast.error("Please fill in all fields.");
       return;
     }
 
@@ -29,7 +29,7 @@ const Awakening = () => {
       currentWeight,
       goalWeight,
       startDate: new Date().toISOString().split('T')[0],
-      anthropicApiKey: apiKey,
+      // anthropicApiKey: apiKey, // Removed
     };
     setProfile(newProfile);
     toast.success("System Initialized! Welcome, Hunter.");
@@ -90,23 +90,7 @@ const Awakening = () => {
               className="bg-input border-border text-foreground"
             />
           </div>
-          <div className="pt-4">
-            <h3 className="text-xl font-semibold text-primary-foreground mb-2">AI Integration Setup</h3>
-            <p className="text-sm text-text-secondary mb-2">
-              To enable AI features, please provide your Anthropic API Key.
-              <br />
-              Get it from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">console.anthropic.com</a>
-            </p>
-            <Label htmlFor="apiKey" className="text-left block mb-1 text-text-secondary">Anthropic API Key</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="bg-input border-border text-foreground"
-              placeholder="sk-ant-api03-..."
-            />
-          </div>
+          {/* Removed AI Integration Setup section */}
 
           <Button
             onClick={handleBeginEvaluation}
