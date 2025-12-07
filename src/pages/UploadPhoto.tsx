@@ -33,7 +33,8 @@ const UploadPhoto = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!userProfile?.userId) {
-      toast.error("User not authenticated. Please log in.");
+      toast.error("User not authenticated. Please complete your awakening.");
+      navigate('/awakening');
       return;
     }
     if (!file) {
@@ -46,15 +47,16 @@ const UploadPhoto = () => {
     }
 
     setUploading(true);
-    const loadingToastId = toast.loading("Uploading photo...");
+    const loadingToastId = toast.loading("Uploading photo and analyzing with AI...");
 
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userProfile.userId}/${Date.now()}.${fileExt}`;
       const filePath = `progress_photos/${fileName}`;
 
+      // 1. Upload photo to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents') // Using the 'documents' bucket as per schema context
+        .from('documents')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
@@ -72,26 +74,56 @@ const UploadPhoto = () => {
         throw new Error("Failed to get public URL for the uploaded photo.");
       }
 
+      const imageUrl = publicUrlData.publicUrl;
+
+      // 2. Call Edge Function for AI analysis
+      let bodyFatPercentage: number | null = null;
+      let aiAnalysisReport: string | null = null;
+
+      try {
+        const { data: aiData, error: aiError } = await supabase.functions.invoke('image-analyzer', {
+          body: { imageUrl },
+        });
+
+        if (aiError) {
+          console.error("Supabase Edge Function error:", aiError);
+          toast.error(`AI Analysis Error: ${aiError.message}`);
+        } else if (aiData.error) {
+          console.error("AI API error via proxy:", aiData.error);
+          toast.error(`AI Analysis Error: ${aiData.error}`);
+        } else {
+          bodyFatPercentage = aiData.body_fat_percentage || null;
+          aiAnalysisReport = aiData.advice || null;
+          toast.success("AI analysis complete!", { id: loadingToastId });
+        }
+      } catch (aiCallError) {
+        console.error("Error invoking image-analyzer proxy:", aiCallError);
+        toast.error("Failed to connect to AI for analysis. Please ensure OPENAI_API_KEY is set in Supabase secrets.", { id: loadingToastId });
+      }
+
+      // 3. Insert document record with AI analysis results
       const { error: insertError } = await supabase
         .from('documents')
         .insert({
           user_id: userProfile.userId,
           title: title.trim(),
-          file_url: publicUrlData.publicUrl,
+          file_url: imageUrl,
           description: description.trim() || null,
-          category: 'Progress Photo', // Categorize as progress photo
+          category: 'Progress Photo',
+          body_fat_percentage: bodyFatPercentage,
+          ai_analysis_report: aiAnalysisReport,
         });
 
       if (insertError) {
         throw insertError;
       }
 
-      toast.success("Photo uploaded successfully!", { id: loadingToastId });
+      toast.success("Photo uploaded and analyzed successfully!", { id: loadingToastId });
       setFile(null);
       setTitle('');
       setDescription('');
       setPreviewUrl(null);
-      navigate('/dashboard');
+      navigate('/progress-report'); // Redirect to progress report to see the analysis
     } catch (error: any) {
       console.error("Error uploading photo:", error);
       toast.error(`Failed to upload photo: ${error.message}`, { id: loadingToastId });
@@ -107,7 +139,7 @@ const UploadPhoto = () => {
           <span className="text-orange-400">UPLOAD</span> PHOTO
         </h1>
         <p className="text-lg text-text-secondary mb-8">
-          Document your physical transformation.
+          Document your physical transformation. AI will analyze your physique!
         </p>
 
         <Card className="bg-card p-6 rounded-lg shadow-lg border border-border">
@@ -170,11 +202,11 @@ const UploadPhoto = () => {
                 {uploading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    UPLOADING...
+                    UPLOADING & ANALYZING...
                   </>
                 ) : (
                   <>
-                    <span className="relative z-10">UPLOAD PHOTO</span>
+                    <span className="relative z-10">UPLOAD & ANALYZE PHOTO</span>
                     <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   </>
                 )}

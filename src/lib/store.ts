@@ -77,10 +77,14 @@ export interface AppState {
   logDailyQuest: (date: string, questName: keyof DailyLog['quests'], data: Partial<DailyQuest>) => void;
   updateCurrentWeight: (newWeight: number) => void;
   resetState: () => void;
+  validateAndSetUserId: () => void; // New action
 }
 
+// Fixed UUID for the single user
+const SINGLE_USER_ID = "00000000-0000-0000-0000-000000000001"; 
+
 const initialProfile: UserProfile = {
-  userId: '',
+  userId: SINGLE_USER_ID, // Default to the single user ID
   height: 0,
   startWeight: 0,
   currentWeight: 0,
@@ -142,7 +146,7 @@ export const useAppStore = create<AppState>()(
       dailyLogs: [],
       activeQuests: [],
 
-      setProfile: (profile) => set({ userProfile: profile }),
+      setProfile: (profile) => set({ userProfile: { ...profile, userId: SINGLE_USER_ID } }), // Ensure userId is always the fixed one
       setAttribute: (attributeName, attribute) =>
         set((state) => {
           const newScore = attribute.score;
@@ -261,6 +265,13 @@ export const useAppStore = create<AppState>()(
         dailyLogs: [],
         activeQuests: [],
       }),
+      validateAndSetUserId: () => {
+        const currentProfile = get().userProfile;
+        if (!currentProfile || currentProfile.userId !== SINGLE_USER_ID) {
+          // If profile is null or userId is incorrect, reset it to the default with SINGLE_USER_ID
+          set({ userProfile: { ...initialProfile, userId: SINGLE_USER_ID } });
+        }
+      },
     }),
     {
       name: 'solo-leveling-app-storage', // unique name

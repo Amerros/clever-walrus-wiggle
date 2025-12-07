@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
-import { format, parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format, parseISO, subMonths } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -34,11 +34,24 @@ interface Meal {
   created_at: string;
 }
 
+interface Document {
+  id: string;
+  user_id: string;
+  title: string;
+  file_url: string;
+  description: string | null;
+  category: string | null;
+  uploaded_at: string;
+  body_fat_percentage: number | null;
+  ai_analysis_report: string | null;
+}
+
 const ProgressReport = () => {
   const userProfile = useAppStore((state) => state.userProfile);
   const level = useAppStore((state) => state.level);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [meals, setMeals] = useState<Meal[]>([]);
+  const [progressPhotos, setProgressPhotos] = useState<Document[]>([]);
   // Explicitly type dateRange as DateRange | undefined
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
@@ -87,6 +100,23 @@ const ProgressReport = () => {
       toast.error("Failed to load meal data.");
     } else {
       setMeals(mealData || []);
+    }
+
+    // Fetch Progress Photos
+    const { data: photoData, error: photoError } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', userProfile.userId)
+      .eq('category', 'Progress Photo')
+      .gte('uploaded_at', fromDate)
+      .lte('uploaded_at', toDate)
+      .order('uploaded_at', { ascending: false }); // Show newest first
+
+    if (photoError) {
+      console.error("Error fetching progress photos:", photoError);
+      toast.error("Failed to load progress photos.");
+    } else {
+      setProgressPhotos(photoData || []);
     }
   };
 
@@ -238,6 +268,37 @@ const ProgressReport = () => {
                 <p className="text-text-secondary">No meal data for this period.</p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-primary-foreground">Progress Photos & AI Analysis</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {progressPhotos.length > 0 ? (
+              progressPhotos.map((photo) => (
+                <div key={photo.id} className="bg-muted p-4 rounded-lg border border-border flex flex-col">
+                  <img src={photo.file_url} alt={photo.title} className="w-full h-48 object-cover rounded-md mb-3" />
+                  <h4 className="text-lg font-semibold text-primary-accent mb-1">{photo.title}</h4>
+                  <p className="text-sm text-text-secondary mb-2">Uploaded: {format(parseISO(photo.uploaded_at), 'PPP')}</p>
+                  {photo.body_fat_percentage !== null && (
+                    <p className="text-md font-bold text-sl-success mb-1">Body Fat: {photo.body_fat_percentage}%</p>
+                  )}
+                  {photo.ai_analysis_report && (
+                    <div className="mt-2 text-sm text-text-secondary">
+                      <p className="font-semibold text-primary-foreground">AI Advice:</p>
+                      <p>{photo.ai_analysis_report}</p>
+                    </div>
+                  )}
+                  {!photo.body_fat_percentage && !photo.ai_analysis_report && (
+                    <p className="text-sm text-text-secondary">No AI analysis available for this photo.</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-text-secondary col-span-full">No progress photos uploaded yet. <Link to="/upload-photo" className="text-primary-accent hover:underline">Upload one now!</Link></p>
+            )}
           </CardContent>
         </Card>
 

@@ -15,14 +15,19 @@ import WeighIn from "./pages/WeighIn";
 import LogCreatine from "./pages/LogCreatine";
 import LogSleep from "./pages/LogSleep";
 import Header from "./components/Header";
-import RetestAttributes from "./pages/RetestAttributes"; // New import
+import RetestAttributes from "./pages/RetestAttributes";
 import { useAppStore } from "./lib/store";
-import React from "react";
+import React, { useEffect } from "react"; // Import useEffect
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const userProfile = useAppStore((state) => state.userProfile);
+  const validateAndSetUserId = useAppStore((state) => state.validateAndSetUserId);
+
+  useEffect(() => {
+    validateAndSetUserId();
+  }, [validateAndSetUserId]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -41,7 +46,7 @@ const App = () => {
             <Route path="/weigh-in" element={<WeighIn />} />
             <Route path="/log-creatine" element={<LogCreatine />} />
             <Route path="/log-sleep" element={<LogSleep />} />
-            <Route path="/retest-attributes" element={<RetestAttributes />} /> {/* New route */}
+            <Route path="/retest-attributes" element={<RetestAttributes />} />
             
             {/* Main routes, redirecting to Awakening if no profile */}
             <Route
