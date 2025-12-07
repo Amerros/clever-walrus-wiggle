@@ -47,7 +47,7 @@ const LogWorkout = () => {
 
     try {
       const { data, error } = await supabase
-        .from('workouts')
+        .from('sl_workouts') // Changed to sl_workouts
         .insert({
           user_id: userProfile.userId,
           workout_name: values.workoutName,

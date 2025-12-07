@@ -56,7 +56,7 @@ const UploadPhoto = () => {
 
       // 1. Upload photo to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents')
+        .from('documents') // Still using 'documents' bucket for storage
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
@@ -67,7 +67,7 @@ const UploadPhoto = () => {
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from('documents')
+        .from('documents') // Still using 'documents' bucket for storage
         .getPublicUrl(filePath);
 
       if (!publicUrlData?.publicUrl) {
@@ -76,12 +76,12 @@ const UploadPhoto = () => {
 
       const imageUrl = publicUrlData.publicUrl;
 
-      // 2. Call Edge Function for AI analysis (now Gemini)
+      // 2. Call Edge Function for AI analysis (Gemini)
       let bodyFatPercentage: number | null = null;
       let aiAnalysisReport: string | null = null;
 
       try {
-        const { data: aiData, error: aiError } = await supabase.functions.invoke('gemini-image-analyzer', { // Changed to gemini-image-analyzer
+        const { data: aiData, error: aiError } = await supabase.functions.invoke('gemini-image-analyzer', {
           body: { imageUrl },
         });
 
@@ -101,9 +101,9 @@ const UploadPhoto = () => {
         toast.error("Failed to connect to AI for analysis. Please ensure GEMINI_API_KEY is set in Supabase secrets.", { id: loadingToastId });
       }
 
-      // 3. Insert document record with AI analysis results
+      // 3. Insert document record with AI analysis results into new table
       const { error: insertError } = await supabase
-        .from('documents')
+        .from('sl_documents') // Changed to sl_documents
         .insert({
           user_id: userProfile.userId,
           title: title.trim(),

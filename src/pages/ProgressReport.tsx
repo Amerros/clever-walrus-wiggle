@@ -70,9 +70,9 @@ const ProgressReport = () => {
     const fromDate = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '1900-01-01';
     const toDate = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
 
-    // Fetch Workouts
+    // Fetch Workouts from new table
     const { data: workoutData, error: workoutError } = await supabase
-      .from('workouts')
+      .from('sl_workouts') // Changed to sl_workouts
       .select('*')
       .eq('user_id', userProfile.userId)
       .gte('workout_date', fromDate)
@@ -86,9 +86,9 @@ const ProgressReport = () => {
       setWorkouts(workoutData || []);
     }
 
-    // Fetch Meals
+    // Fetch Meals from new table
     const { data: mealData, error: mealError } = await supabase
-      .from('meals')
+      .from('sl_meals') // Changed to sl_meals
       .select('*')
       .eq('user_id', userProfile.userId)
       .gte('meal_date', fromDate)
@@ -102,9 +102,9 @@ const ProgressReport = () => {
       setMeals(mealData || []);
     }
 
-    // Fetch Progress Photos
+    // Fetch Progress Photos from new table
     const { data: photoData, error: photoError } = await supabase
-      .from('documents')
+      .from('sl_documents') // Changed to sl_documents
       .select('*')
       .eq('user_id', userProfile.userId)
       .eq('category', 'Progress Photo')

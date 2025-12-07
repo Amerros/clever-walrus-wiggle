@@ -45,7 +45,7 @@ const WeighIn = () => {
 
     try {
       const { data, error } = await supabase
-        .from('weights')
+        .from('sl_weights') // Changed to sl_weights
         .insert({
           user_id: userProfile.userId,
           weight_kg: values.weight,

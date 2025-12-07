@@ -52,7 +52,7 @@ const LogSleep = () => {
 
     try {
       const { data, error } = await supabase
-        .from('sleep_logs')
+        .from('sl_sleep_logs') // Changed to sl_sleep_logs
         .insert({
           user_id: userProfile.userId,
           duration_hours: values.durationHours,

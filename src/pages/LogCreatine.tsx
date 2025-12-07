@@ -49,7 +49,7 @@ const LogCreatine = () => {
 
     try {
       const { data, error } = await supabase
-        .from('creatine_logs')
+        .from('sl_creatine_logs') // Changed to sl_creatine_logs
         .insert({
           user_id: userProfile.userId,
           dose_mg: values.doseMg,

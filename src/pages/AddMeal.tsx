@@ -94,7 +94,7 @@ const AddMeal = () => {
 
     try {
       const { data, error } = await supabase
-        .from('meals')
+        .from('sl_meals') // Changed to sl_meals
         .insert({
           user_id: userProfile.userId,
           meal_name: values.mealName,
