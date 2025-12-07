@@ -1,40 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 const Awakening = () => {
   const navigate = useNavigate();
+  const { user, isLoading } = useSession(); // Get user and loading state from session
   const setProfile = useAppStore((state) => state.setProfile);
   const userProfile = useAppStore((state) => state.userProfile);
 
-  const [height, setHeight] = useState<number>(userProfile?.height || 189);
-  const [currentWeight, setCurrentWeight] = useState<number>(userProfile?.currentWeight || 72);
-  const [goalWeight, setGoalWeight] = useState<number>(userProfile?.goalWeight || 78);
-  // const [apiKey, setApiKey] = useState<string>(userProfile?.anthropicApiKey || ''); // Removed
+  const [height, setHeight] = useState<number>(userProfile?.height || 175); // Sensible default
+  const [currentWeight, setCurrentWeight] = useState<number>(userProfile?.currentWeight || 70); // Sensible default
+  const [goalWeight, setGoalWeight] = useState<number>(userProfile?.goalWeight || 75); // Sensible default
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      // If not loading and no user, redirect to login
+      navigate('/login');
+      toast.info("Please log in to begin your awakening.");
+    } else if (!isLoading && user && userProfile?.userId === user.id) {
+      // If user is logged in and profile already set, redirect to dashboard
+      navigate('/dashboard');
+    }
+  }, [user, isLoading, navigate, userProfile]);
 
   const handleBeginEvaluation = () => {
-    if (!height || !currentWeight || !goalWeight) { // Removed apiKey check
+    if (!user) {
+      toast.error("You must be logged in to begin your awakening.");
+      navigate('/login');
+      return;
+    }
+
+    if (!height || !currentWeight || !goalWeight) {
       toast.error("Please fill in all fields.");
       return;
     }
 
     const newProfile = {
-      userId: 'user-123', // In a real app, this would be dynamic
+      userId: user.id, // Use the actual Supabase user ID
       height,
       startWeight: currentWeight,
       currentWeight,
       goalWeight,
       startDate: new Date().toISOString().split('T')[0],
-      // anthropicApiKey: apiKey, // Removed
     };
     setProfile(newProfile);
     toast.success("System Initialized! Welcome, Hunter.");
     navigate('/dashboard');
   };
+
+  if (isLoading || !user) {
+    // Show a loading state or nothing while redirecting
+    return <div className="min-h-screen flex items-center justify-center bg-background text-foreground">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4">
@@ -90,7 +112,6 @@ const Awakening = () => {
               className="bg-input border-border text-foreground"
             />
           </div>
-          {/* Removed AI Integration Setup section */}
 
           <Button
             onClick={handleBeginEvaluation}
